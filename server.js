@@ -2,9 +2,10 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cron = require('node-cron');
+require('dotenv').config(); // Load environment variables
 
-const TOKEN = '8037692637:AAF8hQ8iHx0lU89bb_4R7POUkPyu08zO3lk';
-const CHAT_ID = 'YOUR_CHAT_ID';
+const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID = process.env.CHAT_ID;
 const URL = 'https://www.chemiefabrik.info/gigs/';
 
 const bot = new TelegramBot(TOKEN, { polling: true });
@@ -19,7 +20,7 @@ async function fetchConcerts() {
         let concerts = [];
         
         $('.elementor-element-cdc7517').each((i, el) => {
-            const title = $(el).find('.bandlink').text().trim(); // Ensure title is extracted correctly
+            const title = $(el).find('.bandlink').text().trim();
             const date = $(el).find('.elementor-element-93c9594').text().trim();
             const image = $(el).find('img').attr('src');
             const links = [];
@@ -34,7 +35,7 @@ async function fetchConcerts() {
         });
         return concerts;
     } catch (error) {
-        console.error('Ошибка при получении концертов:', error);
+        console.error('Error while getting concerts:', error);
         return [];
     }
 }
@@ -53,7 +54,7 @@ async function sendConcerts(chatId) {
         });
 
         const isFavorite = favoriteConcerts.includes(concert.title);
-        const buttonText = isFavorite ? 'Убрать из избранного' : 'Добавить в избранное';
+        const buttonText = isFavorite ? 'Remove from favorites' : 'Add to favorites';
         const callbackData = isFavorite ? `unfavorite_${concert.title}` : `favorite_${concert.title}`;
         
         await bot.sendPhoto(chatId, concert.image, {
@@ -69,25 +70,25 @@ async function sendConcerts(chatId) {
 }
 
 cron.schedule('0 * * * *', () => {
-    console.log('Проверка новых концертов...');
+    console.log('Checking out new concerts...');
     sendConcerts(CHAT_ID);
 });
 
 bot.onText(/\/start/, (msg) => {
-    bot.sendMessage(msg.chat.id, 'Привет! Я бот, присылающий информацию о концертах в Chemiefabrik.', {
+    bot.sendMessage(msg.chat.id, "Hello! I'm a bot sending information about concerts in Chemiefabrik.", {
         reply_markup: {
-            keyboard: [[{ text: '🎵 Список концертов' }, { text: '⭐ Избранное' }]],
+            keyboard: [[{ text: '🎵 List of concerts' }, { text: '⭐ Favorites' }]],
             resize_keyboard: true
         }
     });
 });
 
 bot.on('message', async (msg) => {
-    if (msg.text === '🎵 Список концертов') {
+    if (msg.text === '🎵 List of concerts') {
         await sendConcerts(msg.chat.id);
-    } else if (msg.text === '⭐ Избранное') {
+    } else if (msg.text === '⭐ Favorites') {
         if (favoriteConcerts.length === 0) {
-            bot.sendMessage(msg.chat.id, 'Ваш список избранного пуст.');
+            bot.sendMessage(msg.chat.id, 'Your favorites list is empty.');
         } else {
             for (const concertTitle of favoriteConcerts) {
                 const concerts = await fetchConcerts();
@@ -98,7 +99,7 @@ bot.on('message', async (msg) => {
                         message += `<a href='${link.url}'>${link.text}</a>\n`;
                     });
 
-                    const buttonText = 'Убрать из избранного';
+                    const buttonText = 'Remove from favorites';
                     const callbackData = `unfavorite_${concert.title}`;
                     
                     await bot.sendPhoto(msg.chat.id, concert.image, {
@@ -122,18 +123,18 @@ bot.on('callback_query', (query) => {
         const concertTitle = query.data.replace('favorite_', '');
         if (!favoriteConcerts.includes(concertTitle)) {
             favoriteConcerts.push(concertTitle);
-            bot.sendMessage(chatId, `✅ Концерт "${concertTitle}" добавлен в избранное.`);
+            bot.sendMessage(chatId, `✅ Concert "${concertTitle}" added to favorites.`);
         } else {
-            bot.sendMessage(chatId, `⚠️ Концерт уже в избранном.`);
+            bot.sendMessage(chatId, `⚠️ The concert is already in your favorites.`);
         }
     } else if (query.data.startsWith('unfavorite_')) {
         const concertTitle = query.data.replace('unfavorite_', '');
         const index = favoriteConcerts.indexOf(concertTitle);
         if (index > -1) {
             favoriteConcerts.splice(index, 1);
-            bot.sendMessage(chatId, `❌ Концерт "${concertTitle}" убран из избранного.`);
+            bot.sendMessage(chatId, `❌ Concert "${concertTitle}" removed from favorites.`);
         } else {
-            bot.sendMessage(chatId, `⚠️ Концерт не найден в избранном.`);
+            bot.sendMessage(chatId, `⚠️ Concert not found in favorites.`);
         }
     }
 });
@@ -146,7 +147,7 @@ cron.schedule('0 12 * * *', async () => {
     
     concerts.forEach(concert => {
         if (concert.date.includes(formattedTomorrow)) {
-            bot.sendMessage(CHAT_ID, `⏳ Напоминание! Завтра концерт: ${concert.title}`);
+            bot.sendMessage(CHAT_ID, `⏳ Reminder! Concert tomorrow: ${concert.title}`);
         }
     });
 });
