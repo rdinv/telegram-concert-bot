@@ -19,17 +19,17 @@ async function fetchConcerts() {
         let concerts = [];
         
         $('.elementor-element-cdc7517').each((i, el) => {
-            const title = $(el).find('.bandlink').text().trim();
             const date = $(el).find('.elementor-element-93c9594').text().trim();
             const image = $(el).find('img').attr('src');
             const links = [];
             const preis = $(el).find('.elementor-element-307babc').text().trim();
+            const genreLocation = $(el).find('.bandlink').parent().text().trim();
 
             $(el).find('.bandlink').each((j, link) => {
                 links.push({ text: $(link).text().trim(), url: $(link).attr('href') });
             });
 
-            concerts.push({ title, date, image, links, preis });
+            concerts.push({ date, image, links, preis, genreLocation });
         });
         return concerts;
     } catch (error) {
@@ -41,8 +41,12 @@ async function fetchConcerts() {
 async function sendConcerts(chatId) {
     const concerts = await fetchConcerts();
     
-    for (const concert of concerts) {
-        let message = `<b>${concert.title}</b>\n\n📅 ${concert.date}\n\n ${concert.preis}\n\n`;
+    // Limit to the next 15 concerts
+    const limitedConcerts = concerts.slice(0, 15);
+    
+    for (const concert of limitedConcerts) {
+        let message = `${concert.genreLocation}\n\n📅 ${concert.date}\n\n ${concert.preis}\n\n`;
+
         concert.links.forEach(link => {
             message += `<a href='${link.url}'>${link.text}</a>\n`;
         });
