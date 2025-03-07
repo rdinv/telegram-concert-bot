@@ -18,22 +18,17 @@ async function fetchConcerts() {
         
         let concerts = [];
         
-        $('.elementor-81').each((i, el) => {
-            const title = $(el).find('title').text().trim();
+        $('.elementor-element-cdc7517').each((i, el) => {
+            const title = $(el).find('.bandlink').text().trim();
             const date = $(el).find('.elementor-element-93c9594').text().trim();
             const image = $(el).find('img').attr('src');
             const links = [];
-            const genre = $(el).find('.jet-listing-dynamic-repeater__item').text().trim().replace(/.*?(?:\s{2,}|\n)/, ''); // Получаем жанр
 
             $(el).find('.bandlink').each((j, link) => {
-                const url = $(link).attr('href');
-                const text = $(link).text().trim();
-                if (url && text) {
-                    links.push({ text, url });
-                }
+                links.push({ text: $(link).text().trim(), url: $(link).attr('href') });
             });
 
-            concerts.push({ title: `${title} / ${genre}`, date, image, links });
+            concerts.push({ title, date, image, links });
         });
         return concerts;
     } catch (error) {
@@ -50,13 +45,17 @@ async function sendConcerts(chatId) {
         concert.links.forEach(link => {
             message += `<a href='${link.url}'>${link.text}</a>\n`;
         });
+
+        const isFavorite = favoriteConcerts.includes(concert.title);
+        const buttonText = isFavorite ? 'Убрать из избранного' : 'Добавить в избранное';
+        const callbackData = isFavorite ? `unfavorite_${concert.title}` : `favorite_${concert.title}`;
         
         await bot.sendPhoto(chatId, concert.image, {
             caption: message,
             parse_mode: 'HTML',
             reply_markup: {
                 inline_keyboard: [[
-                    { text: 'Добавить в избранное', callback_data: `favorite_${concert.title}` }
+                    { text: buttonText, callback_data: callbackData }
                 ]]
             }
         });
@@ -77,16 +76,36 @@ bot.onText(/\/start/, (msg) => {
     });
 });
 
-bot.on('message', (msg) => {
+bot.on('message', async (msg) => {
     if (msg.text === '🎵 Список концертов') {
-        sendConcerts(msg.chat.id);
+        await sendConcerts(msg.chat.id);
     } else if (msg.text === '⭐ Избранное') {
         if (favoriteConcerts.length === 0) {
             bot.sendMessage(msg.chat.id, 'Ваш список избранного пуст.');
         } else {
-            favoriteConcerts.forEach(concert => {
-                bot.sendMessage(msg.chat.id, `⭐ <b>${concert}</b>`, { parse_mode: 'HTML' });
-            });
+            for (const concertTitle of favoriteConcerts) {
+                const concerts = await fetchConcerts();
+                const concert = concerts.find(c => c.title === concertTitle);
+                if (concert) {
+                    let message = `<b>${concert.title}</b>\n📅 ${concert.date}\n\n`;
+                    concert.links.forEach(link => {
+                        message += `<a href='${link.url}'>${link.text}</a>\n`;
+                    });
+
+                    const buttonText = 'Убрать из избранного';
+                    const callbackData = `unfavorite_${concert.title}`;
+                    
+                    await bot.sendPhoto(msg.chat.id, concert.image, {
+                        caption: message,
+                        parse_mode: 'HTML',
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { text: buttonText, callback_data: callbackData }
+                            ]]
+                        }
+                    });
+                }
+            }
         }
     }
 });
@@ -100,6 +119,15 @@ bot.on('callback_query', (query) => {
             bot.sendMessage(chatId, `✅ Концерт "${concertTitle}" добавлен в избранное.`);
         } else {
             bot.sendMessage(chatId, `⚠️ Концерт уже в избранном.`);
+        }
+    } else if (query.data.startsWith('unfavorite_')) {
+        const concertTitle = query.data.replace('unfavorite_', '');
+        const index = favoriteConcerts.indexOf(concertTitle);
+        if (index > -1) {
+            favoriteConcerts.splice(index, 1);
+            bot.sendMessage(chatId, `❌ Концерт "${concertTitle}" убран из избранного.`);
+        } else {
+            bot.sendMessage(chatId, `⚠️ Концерт не найден в избранном.`);
         }
     }
 });
