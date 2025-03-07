@@ -23,12 +23,13 @@ async function fetchConcerts() {
             const date = $(el).find('.elementor-element-93c9594').text().trim();
             const image = $(el).find('img').attr('src');
             const links = [];
+            const preis = $(el).find('.elementor-element-307babc').text().trim();
 
             $(el).find('.bandlink').each((j, link) => {
                 links.push({ text: $(link).text().trim(), url: $(link).attr('href') });
             });
 
-            concerts.push({ title, date, image, links });
+            concerts.push({ title, date, image, links, preis });
         });
         return concerts;
     } catch (error) {
@@ -41,7 +42,7 @@ async function sendConcerts(chatId) {
     const concerts = await fetchConcerts();
     
     for (const concert of concerts) {
-        let message = `<b>${concert.title}</b>\n📅 ${concert.date}\n\n`;
+        let message = `<b>${concert.title}</b>\n\n📅 ${concert.date}\n\n ${concert.preis}\n\n`;
         concert.links.forEach(link => {
             message += `<a href='${link.url}'>${link.text}</a>\n`;
         });
