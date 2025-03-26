@@ -1,14 +1,9 @@
 const fs = require('fs').promises;
 const path = require('path');
 const config = require('../config');
-const concertService = require('./concertService');
 const { pool } = require('../db');
 
 class UserService {
-    constructor() {
-        this.users = new Map();
-    }
-
     async initialize() {
         try {
             const data = await fs.readFile(config.cache.userDataFile, 'utf8');
@@ -110,13 +105,26 @@ class UserService {
     }
 
     async unsubscribeFromConcert(userId, concertId) {
-        const user = this.users.get(userId);
-        if (user) {
-            user.subscribedConcerts = user.subscribedConcerts.filter(id => id !== concertId);
-            await this.saveUsersToCache();
-            return true;
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query(
+                'SELECT subscribedConcerts FROM users WHERE userId = ?',
+                [userId]
+            );
+
+            if (rows.length > 0) {
+                const subscribedConcerts = JSON.parse(rows[0].subscribedConcerts || '[]');
+                const updatedConcerts = subscribedConcerts.filter(id => id !== concertId);
+                await connection.query(
+                    'UPDATE users SET subscribedConcerts = ? WHERE userId = ?',
+                    [JSON.stringify(updatedConcerts), userId]
+                );
+                return true;
+            }
+            return false;
+        } finally {
+            connection.release();
         }
-        return false;
     }
 
     async subscribeToVenue(userId, venue) {
@@ -167,47 +175,122 @@ class UserService {
         }
     }
 
-    isSubscribedToVenue(userId, venue) {
-        const user = this.users.get(userId);
-        return user && user.subscribedVenues.includes(venue);
+    async isSubscribedToVenue(userId, venue) {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query(
+                'SELECT subscribedVenues FROM users WHERE userId = ?',
+                [userId]
+            );
+            if (rows.length > 0) {
+                const subscribedVenues = JSON.parse(rows[0].subscribedVenues || '[]');
+                return subscribedVenues.includes(venue);
+            }
+            return false;
+        } finally {
+            connection.release();
+        }
     }
 
-    getSubscribedVenues(userId) {
-        const user = this.users.get(userId);
-        return user ? user.subscribedVenues : [];
+    async getSubscribedVenues(userId) {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query(
+                'SELECT subscribedVenues FROM users WHERE userId = ?',
+                [userId]
+            );
+            if (rows.length > 0) {
+                return JSON.parse(rows[0].subscribedVenues || '[]');
+            }
+            return [];
+        } finally {
+            connection.release();
+        }
     }
 
-    getUsersBySubscribedVenue(venue) {
-        return Array.from(this.users.values())
-            .filter(user => user.subscribedVenues.includes(venue));
+    async getUsersBySubscribedVenue(venue) {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query('SELECT * FROM users');
+            return rows.filter(user => {
+                const subscribedVenues = JSON.parse(user.subscribedVenues || '[]');
+                return subscribedVenues.includes(venue);
+            });
+        } finally {
+            connection.release();
+        }
     }
 
-    isSubscribed(userId, concertId) {
-        const user = this.users.get(userId);
-        return user && user.subscribedConcerts.includes(concertId);
+    async isSubscribed(userId, concertId) {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query(
+                'SELECT subscribedConcerts FROM users WHERE userId = ?',
+                [userId]
+            );
+            if (rows.length > 0) {
+                const subscribedConcerts = JSON.parse(rows[0].subscribedConcerts || '[]');
+                return subscribedConcerts.includes(concertId);
+            }
+            return false;
+        } finally {
+            connection.release();
+        }
     }
 
-    getSubscribedUsers(concertId) {
-        return Array.from(this.users.values())
-            .filter(user => user.subscribedConcerts.includes(concertId));
+    async getSubscribedUsers(concertId) {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query('SELECT * FROM users');
+            return rows.filter(user => {
+                const subscribedConcerts = JSON.parse(user.subscribedConcerts || '[]');
+                return subscribedConcerts.includes(concertId);
+            });
+        } finally {
+            connection.release();
+        }
     }
 
     async markConcertAsNotified(userId, concertId) {
-        const user = this.users.get(userId);
-        if (user) {
-            if (!user.lastNotifiedConcerts) {
-                user.lastNotifiedConcerts = new Set();
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query(
+                'SELECT lastNotifiedConcerts FROM users WHERE userId = ?',
+                [userId]
+            );
+
+            if (rows.length > 0) {
+                const lastNotifiedConcerts = new Set(
+                    JSON.parse(rows[0].lastNotifiedConcerts || '[]')
+                );
+                lastNotifiedConcerts.add(concertId);
+                await connection.query(
+                    'UPDATE users SET lastNotifiedConcerts = ? WHERE userId = ?',
+                    [JSON.stringify(Array.from(lastNotifiedConcerts)), userId]
+                );
+                return true;
             }
-            user.lastNotifiedConcerts.add(concertId);
-            await this.saveUsersToCache();
-            return true;
+            return false;
+        } finally {
+            connection.release();
         }
-        return false;
     }
 
-    wasUserNotifiedAboutConcert(userId, concertId) {
-        const user = this.users.get(userId);
-        return user && user.lastNotifiedConcerts && user.lastNotifiedConcerts.has(concertId);
+    async wasUserNotifiedAboutConcert(userId, concertId) {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query(
+                'SELECT lastNotifiedConcerts FROM users WHERE userId = ?',
+                [userId]
+            );
+            if (rows.length > 0) {
+                const lastNotifiedConcerts = JSON.parse(rows[0].lastNotifiedConcerts || '[]');
+                return lastNotifiedConcerts.includes(concertId);
+            }
+            return false;
+        } finally {
+            connection.release();
+        }
     }
 }
 

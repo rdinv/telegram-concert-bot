@@ -201,16 +201,16 @@ bot.onText(/📍 Concerts by location/, async (msg) => {
 // Add handler for favorites button
 bot.onText(/⭐ Favorites/, async (msg) => {
     const userId = msg.from.id;
-    const user = userService.getUser(userId);
-    
-    if (!user || !user.subscribedConcerts || user.subscribedConcerts.length === 0) {
+    const user = await userService.getUser(userId); // Используем await для получения данных из базы
+
+    if (!user || !user.subscribedConcerts || JSON.parse(user.subscribedConcerts).length === 0) {
         await bot.sendMessage(userId, 'You have no favorite concerts yet.');
         return;
     }
 
     console.log('User subscribed concerts:', user.subscribedConcerts);
 
-    const favoriteConcerts = user.subscribedConcerts
+    const favoriteConcerts = JSON.parse(user.subscribedConcerts)
         .map(concertId => {
             const concert = concertService.getConcertById(concertId);
             if (!concert) {
