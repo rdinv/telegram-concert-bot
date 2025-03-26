@@ -214,6 +214,41 @@ bot.onText(/📍 Concerts by location/, async (msg) => {
     }
 });
 
+bot.onText(/⭐ Favorites/, async (msg) => {
+    const userId = msg.from.id;
+    try {
+        const user = await userService.getUser(userId);
+
+        if (!user || !user.subscribedConcerts || JSON.parse(user.subscribedConcerts).length === 0) {
+            await bot.sendMessage(userId, 'You have no favorite concerts yet.');
+            return;
+        }
+
+        const subscribedConcertIds = JSON.parse(user.subscribedConcerts);
+        const favoriteConcerts = await Promise.all(
+            subscribedConcertIds.map(async (concertId) => {
+                const concert = await concertService.getConcertById(concertId);
+                return concert && new Date(concert.date) > new Date() ? concert : null;
+            })
+        );
+
+        const upcomingFavorites = favoriteConcerts.filter(concert => concert !== null);
+
+        if (upcomingFavorites.length === 0) {
+            await bot.sendMessage(userId, 'You have no upcoming favorite concerts.');
+            return;
+        }
+
+        await bot.sendMessage(userId, 'Your favorite concerts:');
+        for (const concert of upcomingFavorites) {
+            await sendConcertNotification(userId, concert);
+        }
+    } catch (error) {
+        console.error('Error fetching favorite concerts:', error);
+        await bot.sendMessage(userId, 'There was an error fetching your favorite concerts. Please try again later.');
+    }
+});
+
 bot.on('callback_query', async (callbackQuery) => {
     const userId = callbackQuery.from.id;
     const data = callbackQuery.data;
