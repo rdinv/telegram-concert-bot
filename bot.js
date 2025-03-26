@@ -502,11 +502,10 @@ bot.on('callback_query', async (callbackQuery) => {
 // Function to update concert message with updated subscription status
 async function updateConcertMessage(message, concert, isSubscribed) {
     try {
-        // Убедимся, что поле artists остается неизменным
-        const artists = Array.isArray(concert.artists)
-            ? concert.artists
-            : JSON.parse(concert.artists || '[]');
-        concert.artists = artists; // Сохраняем список артистов
+        // Проверяем, что поле artists уже существует и корректно
+        if (!Array.isArray(concert.artists)) {
+            concert.artists = JSON.parse(concert.artists || '[]'); // Парсим поле artists, если оно строка
+        }
 
         const newMessage = formatConcertMessage(concert);
 
