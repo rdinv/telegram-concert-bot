@@ -357,6 +357,10 @@ bot.on('callback_query', async (callbackQuery) => {
                         {
                             text: '📋 Show concerts',
                             callback_data: `show_venue_${venue}`
+                        },
+                        {
+                            text: '📅 Next 7 Days',
+                            callback_data: `next7_venue_${venue}`
                         }
                     ]
                 ]
@@ -397,6 +401,10 @@ bot.on('callback_query', async (callbackQuery) => {
                         {
                             text: '📋 Show concerts',
                             callback_data: `show_venue_${venue}`
+                        },
+                        {
+                            text: '📅 Next 7 Days',
+                            callback_data: `next7_venue_${venue}`
                         }
                     ]
                 ]
