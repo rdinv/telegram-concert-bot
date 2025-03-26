@@ -123,15 +123,17 @@ async function sendConcertNotification(userId, concert) {
 
 // Format concert message
 function formatConcertMessage(concert) {
-    const artistsList = concert.artists
-        .map(artist => `• <a href="${artist.link}">${artist.name}</a>`)
-        .join('\n');
+    const artistsList = Array.isArray(concert.artists) && concert.artists.length > 0
+        ? concert.artists
+            .map(artist => `• <a href="${artist.link || '#'}">${artist.name}</a>`)
+            .join('\n')
+        : 'No artists available';
 
     return `
 🎵 <b>${concert.title}</b>
 📅 ${new Date(concert.date).toLocaleString('ru-RU')}
 📍 ${concert.venue}
-💰 ${concert.price}
+💰 ${concert.price || 'Price not specified'}
 
 <b>Artists:</b>
 ${artistsList}
@@ -441,6 +443,7 @@ bot.on('callback_query', async (callbackQuery) => {
     } else if (data.startsWith('f_')) {
         const concertId = data.replace('f_', '');
         try {
+            console.log(`User ${userId} is subscribing to concert ${concertId}`);
             const isSubscribed = await userService.subscribeToConcert(userId, concertId);
             if (isSubscribed) {
                 await bot.answerCallbackQuery(callbackQuery.id, {
@@ -449,6 +452,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
+                    console.log(`Updating message for concert ${concertId} after subscription`);
                     await updateConcertMessage(callbackQuery.message, userId, concert);
                 }
             } else {
@@ -467,6 +471,7 @@ bot.on('callback_query', async (callbackQuery) => {
     } else if (data.startsWith('u_')) {
         const concertId = data.replace('u_', '');
         try {
+            console.log(`User ${userId} is unsubscribing from concert ${concertId}`);
             const isUnsubscribed = await userService.unsubscribeFromConcert(userId, concertId);
             if (isUnsubscribed) {
                 await bot.answerCallbackQuery(callbackQuery.id, {
@@ -475,6 +480,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
+                    console.log(`Updating message for concert ${concertId} after unsubscription`);
                     await updateConcertMessage(callbackQuery.message, userId, concert);
                 }
             } else {
@@ -493,10 +499,9 @@ bot.on('callback_query', async (callbackQuery) => {
     }
 });
 
-// Function to update concert message with updated subscription status
 async function updateConcertMessage(message, userId, concert) {
     try {
-        // Проверяем актуальный статус подписки из базы данных
+        console.log(`Fetching subscription status for user ${userId} and concert ${concert.id}`);
         const isSubscribed = await userService.isSubscribed(userId, concert.id);
 
         const keyboard = {
@@ -512,6 +517,7 @@ async function updateConcertMessage(message, userId, concert) {
         const newMessage = formatConcertMessage(concert);
 
         if (message.photo) {
+            console.log(`Editing photo caption for concert ${concert.id}`);
             await bot.editMessageCaption(newMessage, {
                 chat_id: message.chat.id,
                 message_id: message.message_id,
@@ -519,6 +525,7 @@ async function updateConcertMessage(message, userId, concert) {
                 reply_markup: keyboard
             });
         } else {
+            console.log(`Editing text message for concert ${concert.id}`);
             await bot.editMessageText(newMessage, {
                 chat_id: message.chat.id,
                 message_id: message.message_id,
