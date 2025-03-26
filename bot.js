@@ -357,7 +357,89 @@ bot.on('callback_query', async (callbackQuery) => {
                 show_alert: true
             });
         }
+    } else if (data.startsWith('f_')) {
+        const concertId = data.replace('f_', '');
+        try {
+            const isSubscribed = await userService.subscribeToConcert(userId, concertId);
+            if (isSubscribed) {
+                await bot.answerCallbackQuery(callbackQuery.id, {
+                    text: 'Concert added to favorites!'
+                });
+
+                const concert = await concertService.getConcertById(concertId);
+                if (concert) {
+                    await updateConcertMessage(callbackQuery.message, userId, concert);
+                }
+            } else {
+                await bot.answerCallbackQuery(callbackQuery.id, {
+                    text: 'You are already subscribed to this concert.'
+                });
+            }
+        } catch (error) {
+            console.error(`Error adding concert ${concertId} to favorites for user ${userId}:`, error);
+            await bot.answerCallbackQuery(callbackQuery.id, {
+                text: 'An error occurred. Please try again later.',
+                show_alert: true
+            });
+        }
+    } else if (data.startsWith('u_')) {
+        const concertId = data.replace('u_', '');
+        try {
+            const isUnsubscribed = await userService.unsubscribeFromConcert(userId, concertId);
+            if (isUnsubscribed) {
+                await bot.answerCallbackQuery(callbackQuery.id, {
+                    text: 'Concert removed from favorites!'
+                });
+
+                const concert = await concertService.getConcertById(concertId);
+                if (concert) {
+                    await updateConcertMessage(callbackQuery.message, userId, concert);
+                }
+            } else {
+                await bot.answerCallbackQuery(callbackQuery.id, {
+                    text: 'You are not subscribed to this concert.'
+                });
+            }
+        } catch (error) {
+            console.error(`Error removing concert ${concertId} from favorites for user ${userId}:`, error);
+            await bot.answerCallbackQuery(callbackQuery.id, {
+                text: 'An error occurred. Please try again later.',
+                show_alert: true
+            });
+        }
     }
 });
+
+// Function to update concert message with updated subscription status
+async function updateConcertMessage(message, userId, concert) {
+    const newMessage = formatConcertMessage(concert);
+    const isSubscribed = await userService.isSubscribed(userId, concert.id);
+
+    const keyboard = {
+        inline_keyboard: [
+            [
+                isSubscribed
+                    ? { text: '❌ Remove from favorites', callback_data: `u_${concert.id}` }
+                    : { text: '⭐ Add to favorites', callback_data: `f_${concert.id}` }
+            ]
+        ]
+    };
+
+    if (message.photo) {
+        await bot.editMessageCaption(newMessage, {
+            chat_id: message.chat.id,
+            message_id: message.message_id,
+            parse_mode: 'HTML',
+            reply_markup: keyboard
+        });
+    } else {
+        await bot.editMessageText(newMessage, {
+            chat_id: message.chat.id,
+            message_id: message.message_id,
+            parse_mode: 'HTML',
+            reply_markup: keyboard
+        });
+    }
+}
 
 initialize().catch(console.error);
