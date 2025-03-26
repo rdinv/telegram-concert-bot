@@ -516,8 +516,13 @@ class ConcertService {
     async getVenues() {
         const connection = await pool.getConnection();
         try {
+            console.log('Fetching venues...');
             const [rows] = await connection.query('SELECT DISTINCT venue FROM concerts WHERE date > NOW()');
-            return rows.map(row => row.venue); // Возвращаем массив уникальных локаций
+            console.log('Venues fetched:', rows);
+            return rows.map(row => row.venue);
+        } catch (error) {
+            console.error('Error fetching venues:', error);
+            return [];
         } finally {
             connection.release();
         }

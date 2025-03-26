@@ -15,7 +15,7 @@ const pool = mysql.createPool({
 async function initializeDatabase() {
     const connection = await pool.getConnection();
     try {
-        // Create users table
+        console.log('Initializing database...');
         await connection.query(`
             CREATE TABLE IF NOT EXISTS users (
                 userId VARCHAR(255) PRIMARY KEY,
@@ -28,8 +28,8 @@ async function initializeDatabase() {
                 createdAt DATETIME
             )
         `);
+        console.log('Users table ensured.');
 
-        // Create concerts table
         await connection.query(`
             CREATE TABLE IF NOT EXISTS concerts (
                 id VARCHAR(255) PRIMARY KEY,
@@ -41,6 +41,10 @@ async function initializeDatabase() {
                 subscribers TEXT
             )
         `);
+        console.log('Concerts table ensured.');
+    } catch (error) {
+        console.error('Error initializing database:', error);
+        throw error;
     } finally {
         connection.release();
     }

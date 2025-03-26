@@ -195,13 +195,19 @@ class UserService {
     async getSubscribedVenues(userId) {
         const connection = await pool.getConnection();
         try {
+            console.log(`Fetching subscribed venues for user ${userId}...`);
             const [rows] = await connection.query(
                 'SELECT subscribedVenues FROM users WHERE userId = ?',
                 [userId]
             );
             if (rows.length > 0) {
-                return JSON.parse(rows[0].subscribedVenues || '[]');
+                const venues = JSON.parse(rows[0].subscribedVenues || '[]');
+                console.log(`Subscribed venues for user ${userId}:`, venues);
+                return venues;
             }
+            return [];
+        } catch (error) {
+            console.error(`Error fetching subscribed venues for user ${userId}:`, error);
             return [];
         } finally {
             connection.release();
