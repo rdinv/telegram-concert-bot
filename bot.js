@@ -282,6 +282,10 @@ bot.on('callback_query', async (callbackQuery) => {
                         {
                             text: '📋 Show concerts',
                             callback_data: `show_venue_${venue}`
+                        },
+                        {
+                            text: '📅 Next 7 Days',
+                            callback_data: `next7_venue_${venue}`
                         }
                     ]
                 ]
@@ -297,6 +301,38 @@ bot.on('callback_query', async (callbackQuery) => {
             );
         } catch (error) {
             console.error(`Error handling venue callback for ${venue}:`, error);
+            await bot.answerCallbackQuery(callbackQuery.id, {
+                text: 'An error occurred. Please try again later.',
+                show_alert: true
+            });
+        }
+    } else if (data.startsWith('next7_venue_')) {
+        const venue = data.replace('next7_venue_', '');
+        try {
+            const concerts = await concertService.getConcertsByVenue(venue);
+            const now = new Date();
+            const next7Days = new Date();
+            next7Days.setDate(now.getDate() + 7);
+
+            const upcomingConcerts = concerts.filter(concert => {
+                const concertDate = new Date(concert.date);
+                return concertDate >= now && concertDate <= next7Days;
+            });
+
+            if (upcomingConcerts.length === 0) {
+                await bot.answerCallbackQuery(callbackQuery.id, {
+                    text: `No concerts found for the next 7 days at ${venue}.`,
+                    show_alert: true
+                });
+                return;
+            }
+
+            await bot.answerCallbackQuery(callbackQuery.id);
+            for (const concert of upcomingConcerts) {
+                await sendConcertNotification(userId, concert);
+            }
+        } catch (error) {
+            console.error(`Error showing concerts for the next 7 days at venue ${venue}:`, error);
             await bot.answerCallbackQuery(callbackQuery.id, {
                 text: 'An error occurred. Please try again later.',
                 show_alert: true
@@ -466,6 +502,12 @@ bot.on('callback_query', async (callbackQuery) => {
 // Function to update concert message with updated subscription status
 async function updateConcertMessage(message, concert, isSubscribed) {
     try {
+        // Убедимся, что поле artists остается неизменным
+        const artists = Array.isArray(concert.artists)
+            ? concert.artists
+            : JSON.parse(concert.artists || '[]');
+        concert.artists = artists; // Сохраняем список артистов
+
         const newMessage = formatConcertMessage(concert);
 
         const keyboard = {
