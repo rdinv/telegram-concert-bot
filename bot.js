@@ -412,33 +412,37 @@ bot.on('callback_query', async (callbackQuery) => {
 
 // Function to update concert message with updated subscription status
 async function updateConcertMessage(message, userId, concert) {
-    const newMessage = formatConcertMessage(concert);
-    const isSubscribed = await userService.isSubscribed(userId, concert.id);
+    try {
+        const newMessage = formatConcertMessage(concert);
+        const isSubscribed = await userService.isSubscribed(userId, concert.id);
 
-    const keyboard = {
-        inline_keyboard: [
-            [
-                isSubscribed
-                    ? { text: '❌ Remove from favorites', callback_data: `u_${concert.id}` }
-                    : { text: '⭐ Add to favorites', callback_data: `f_${concert.id}` }
+        const keyboard = {
+            inline_keyboard: [
+                [
+                    isSubscribed
+                        ? { text: '❌ Remove from favorites', callback_data: `u_${concert.id}` }
+                        : { text: '⭐ Add to favorites', callback_data: `f_${concert.id}` }
+                ]
             ]
-        ]
-    };
+        };
 
-    if (message.photo) {
-        await bot.editMessageCaption(newMessage, {
-            chat_id: message.chat.id,
-            message_id: message.message_id,
-            parse_mode: 'HTML',
-            reply_markup: keyboard
-        });
-    } else {
-        await bot.editMessageText(newMessage, {
-            chat_id: message.chat.id,
-            message_id: message.message_id,
-            parse_mode: 'HTML',
-            reply_markup: keyboard
-        });
+        if (message.photo) {
+            await bot.editMessageCaption(newMessage, {
+                chat_id: message.chat.id,
+                message_id: message.message_id,
+                parse_mode: 'HTML',
+                reply_markup: keyboard
+            });
+        } else {
+            await bot.editMessageText(newMessage, {
+                chat_id: message.chat.id,
+                message_id: message.message_id,
+                parse_mode: 'HTML',
+                reply_markup: keyboard
+            });
+        }
+    } catch (error) {
+        console.error(`Error updating concert message for user ${userId}:`, error);
     }
 }
 
