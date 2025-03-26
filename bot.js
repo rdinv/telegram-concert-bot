@@ -368,7 +368,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
-                    await updateConcertMessage(callbackQuery.message, userId, concert);
+                    await updateConcertMessage(callbackQuery.message, userId, concert, true);
                 }
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, {
@@ -393,7 +393,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
-                    await updateConcertMessage(callbackQuery.message, userId, concert);
+                    await updateConcertMessage(callbackQuery.message, userId, concert, false);
                 }
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, {
@@ -411,10 +411,9 @@ bot.on('callback_query', async (callbackQuery) => {
 });
 
 // Function to update concert message with updated subscription status
-async function updateConcertMessage(message, userId, concert) {
+async function updateConcertMessage(message, userId, concert, isSubscribed) {
     try {
         const newMessage = formatConcertMessage(concert);
-        const isSubscribed = await userService.isSubscribed(userId, concert.id);
 
         const keyboard = {
             inline_keyboard: [
