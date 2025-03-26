@@ -251,9 +251,8 @@ bot.onText(/⭐ Favorites/, async (msg) => {
             return;
         }
 
-        await bot.sendMessage(userId, 'Your favorite concerts:');
         for (const concert of upcomingFavorites) {
-            await sendConcertNotification(userId, concert);
+            await sendConcertNotification(userId, concert); // Используем ту же функцию, что и для "show concerts"
         }
     } catch (error) {
         console.error('Error fetching favorite concerts:', error);
