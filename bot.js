@@ -454,7 +454,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
-                    await updateConcertMessage(callbackQuery.message, concert, true);
+                    await updateConcertMessage(callbackQuery.message, userId, concert, true);
                 }
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, {
@@ -481,7 +481,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
-                    await updateConcertMessage(callbackQuery.message, concert, false);
+                    await updateConcertMessage(callbackQuery.message, userId, concert, false);
                 }
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, {
@@ -500,14 +500,10 @@ bot.on('callback_query', async (callbackQuery) => {
 });
 
 // Function to update concert message with updated subscription status
-async function updateConcertMessage(message, concert, isSubscribed) {
+async function updateConcertMessage(message, userId, concert) {
     try {
-        // Проверяем, что поле artists уже существует и корректно
-        if (!Array.isArray(concert.artists)) {
-            concert.artists = JSON.parse(concert.artists || '[]'); // Парсим поле artists, если оно строка
-        }
-
         const newMessage = formatConcertMessage(concert);
+        const isSubscribed = await userService.isSubscribed(userId, concert.id); // Добавлено await
 
         const keyboard = {
             inline_keyboard: [
