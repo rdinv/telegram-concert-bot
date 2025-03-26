@@ -232,7 +232,9 @@ bot.onText(/⭐ Favorites/, async (msg) => {
             })
         );
 
-        const upcomingFavorites = favoriteConcerts.filter(concert => concert !== null);
+        const upcomingFavorites = favoriteConcerts
+            .filter(concert => concert !== null)
+            .sort((a, b) => new Date(a.date) - new Date(b.date)); // Сортировка по дате
 
         if (upcomingFavorites.length === 0) {
             await bot.sendMessage(userId, 'You have no upcoming favorite concerts.');
