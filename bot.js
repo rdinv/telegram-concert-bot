@@ -122,21 +122,11 @@ async function sendConcertNotification(userId, concert) {
 }
 
 function formatConcertMessage(concert) {
-    let artistsList = 'No artists available';
-
-    try {
-        const artists = Array.isArray(concert.artists) 
-            ? concert.artists 
-            : JSON.parse(concert.artists || '[]'); // Парсим поле artists, если оно строка
-
-        if (Array.isArray(artists) && artists.length > 0) {
-            artistsList = artists
-                .map(artist => `• <a href="${artist.link || '#'}">${artist.name}</a>`)
-                .join('\n');
-        }
-    } catch (error) {
-        console.error('Error processing artists for concert:', concert.id, error);
-    }
+    const artistsList = Array.isArray(concert.artists) && concert.artists.length > 0
+        ? concert.artists
+            .map(artist => `• <a href="${artist.link}">${artist.name}</a>`)
+            .join('\n')
+        : 'No artists available';
 
     return `
 🎵 <b>${concert.title}</b>
