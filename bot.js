@@ -361,19 +361,20 @@ bot.on('callback_query', async (callbackQuery) => {
         const concertId = data.replace('f_', '');
         try {
             const isSubscribed = await userService.subscribeToConcert(userId, concertId);
-            if (isSubscribed) {
+            const updatedStatus = await userService.isSubscribed(userId, concertId); // Проверяем статус в базе данных
+            if (isSubscribed && updatedStatus) {
                 await bot.answerCallbackQuery(callbackQuery.id, {
                     text: 'Concert added to favorites!'
                 });
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
-                    // Передаем `true` для обновления кнопки на "Remove from favorites"
                     await updateConcertMessage(callbackQuery.message, concert, true);
                 }
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, {
-                    text: 'You are already subscribed to this concert.'
+                    text: 'Failed to add concert to favorites. Please try again.',
+                    show_alert: true
                 });
             }
         } catch (error) {
@@ -387,19 +388,20 @@ bot.on('callback_query', async (callbackQuery) => {
         const concertId = data.replace('u_', '');
         try {
             const isUnsubscribed = await userService.unsubscribeFromConcert(userId, concertId);
-            if (isUnsubscribed) {
+            const updatedStatus = await userService.isSubscribed(userId, concertId); // Проверяем статус в базе данных
+            if (isUnsubscribed && !updatedStatus) {
                 await bot.answerCallbackQuery(callbackQuery.id, {
                     text: 'Concert removed from favorites!'
                 });
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
-                    // Передаем `false` для обновления кнопки на "Add to favorites"
                     await updateConcertMessage(callbackQuery.message, concert, false);
                 }
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, {
-                    text: 'You are not subscribed to this concert.'
+                    text: 'Failed to remove concert from favorites. Please try again.',
+                    show_alert: true
                 });
             }
         } catch (error) {
