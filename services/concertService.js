@@ -34,21 +34,22 @@ class ConcertService {
         const connection = await pool.getConnection();
         try {
             await connection.query('TRUNCATE TABLE concerts');
-            const insertPromises = concerts.map(concert =>
-                connection.query(
+            const insertPromises = concerts.map(concert => {
+                const formattedDate = new Date(concert.date).toISOString().slice(0, 19).replace('T', ' '); // Format to 'YYYY-MM-DD HH:MM:SS'
+                return connection.query(
                     `INSERT INTO concerts (id, title, date, venue, price, poster, subscribers)
                      VALUES (?, ?, ?, ?, ?, ?, ?)`,
                     [
                         concert.id,
                         concert.title,
-                        concert.date,
+                        formattedDate,
                         concert.venue,
                         concert.price,
                         concert.poster,
                         JSON.stringify(concert.subscribers || [])
                     ]
-                )
-            );
+                );
+            });
             await Promise.all(insertPromises);
         } finally {
             connection.release();

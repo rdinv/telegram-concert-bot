@@ -40,6 +40,7 @@ class UserService {
             );
 
             if (rows.length === 0) {
+                const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' '); // Format to 'YYYY-MM-DD HH:MM:SS'
                 await connection.query(
                     `INSERT INTO users (userId, username, firstName, lastName, subscribedConcerts, subscribedVenues, lastNotifiedConcerts, createdAt)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -51,7 +52,7 @@ class UserService {
                         JSON.stringify([]),
                         JSON.stringify([]),
                         JSON.stringify([]),
-                        new Date().toISOString()
+                        createdAt
                     ]
                 );
             }
