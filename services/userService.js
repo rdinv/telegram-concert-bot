@@ -120,23 +120,51 @@ class UserService {
     }
 
     async subscribeToVenue(userId, venue) {
-        const user = this.users.get(userId);
-        if (user && !user.subscribedVenues.includes(venue)) {
-            user.subscribedVenues.push(venue);
-            await this.saveUsersToCache();
-            return true;
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query(
+                'SELECT subscribedVenues FROM users WHERE userId = ?',
+                [userId]
+            );
+
+            if (rows.length > 0) {
+                const subscribedVenues = JSON.parse(rows[0].subscribedVenues || '[]');
+                if (!subscribedVenues.includes(venue)) {
+                    subscribedVenues.push(venue);
+                    await connection.query(
+                        'UPDATE users SET subscribedVenues = ? WHERE userId = ?',
+                        [JSON.stringify(subscribedVenues), userId]
+                    );
+                    return true;
+                }
+            }
+            return false;
+        } finally {
+            connection.release();
         }
-        return false;
     }
 
     async unsubscribeFromVenue(userId, venue) {
-        const user = this.users.get(userId);
-        if (user) {
-            user.subscribedVenues = user.subscribedVenues.filter(v => v !== venue);
-            await this.saveUsersToCache();
-            return true;
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query(
+                'SELECT subscribedVenues FROM users WHERE userId = ?',
+                [userId]
+            );
+
+            if (rows.length > 0) {
+                const subscribedVenues = JSON.parse(rows[0].subscribedVenues || '[]');
+                const updatedVenues = subscribedVenues.filter(v => v !== venue);
+                await connection.query(
+                    'UPDATE users SET subscribedVenues = ? WHERE userId = ?',
+                    [JSON.stringify(updatedVenues), userId]
+                );
+                return true;
+            }
+            return false;
+        } finally {
+            connection.release();
         }
-        return false;
     }
 
     isSubscribedToVenue(userId, venue) {

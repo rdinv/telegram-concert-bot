@@ -347,7 +347,7 @@ class ConcertService {
                     title: event.title,  // Полное название со всеми группами и их информацией
                     date: eventDate.toISOString(),
                     venue: 'Chemiefabrik',
-                    price: event.preis || 'Цена не указана',
+                    price: event.preis || 'Preis is not specified',
                     poster: event.image || null,
                     description: event.description || '',
                     location: {
@@ -401,10 +401,10 @@ class ConcertService {
 
                 return {
                     id: `alter-schlachthof-${event.id}`,
-                    title: event.titel || 'Без названия',
+                    title: event.titel || 'Without title',
                     date: eventDate.toISOString(),
                     venue: 'Alter Schlachthof',
-                    price: event.preis || 'Цена не указана',
+                    price: event.preis || 'Preis is not specified',
                     poster: imageUrl,
                     // Дополнительная информация
                     startTime: event.beginn || '',
@@ -418,7 +418,7 @@ class ConcertService {
                     facebook: event.facebook || '',
                     rawData: event, // Сохраняем оригинальные данные
                     artists: [{
-                        name: event.titel || 'Без имени',
+                        name: event.titel || 'Without title',
                         link: event.tickets_url || event.facebook || '#'
                     }]
                 };
@@ -459,10 +459,10 @@ class ConcertService {
 
                 return {
                     id: `junge-garde-${event.id}`,
-                    title: event.titel || 'Без названия',
+                    title: event.titel || 'Without title',
                     date: eventDate.toISOString(),
                     venue: 'Junge Garde',
-                    price: event.preis || 'Цена не указана',
+                    price: event.preis || 'Preis is not specified',
                     poster: imageUrl,
                     // Дополнительная информация
                     startTime: event.beginn || '',
@@ -476,7 +476,7 @@ class ConcertService {
                     facebook: event.facebook || '',
                     rawData: event, // Сохраняем оригинальные данные
                     artists: [{
-                        name: event.titel || 'Без имени',
+                        name: event.titel || 'Without title',
                         link: event.tickets_url || event.facebook || '#'
                     }]
                 };
