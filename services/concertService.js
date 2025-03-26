@@ -513,8 +513,14 @@ class ConcertService {
         }
     }
 
-    getVenues() {
-        return [...new Set(this.concerts.map(concert => concert.venue))];
+    async getVenues() {
+        const connection = await pool.getConnection();
+        try {
+            const [rows] = await connection.query('SELECT DISTINCT venue FROM concerts WHERE date > NOW()');
+            return rows.map(row => row.venue); // Возвращаем массив уникальных локаций
+        } finally {
+            connection.release();
+        }
     }
 
     getConcertsByVenue(venue) {

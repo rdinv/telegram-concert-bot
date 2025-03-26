@@ -182,20 +182,31 @@ bot.onText(/🎵 View all concerts/, async (msg) => {
 
 bot.onText(/📍 Concerts by location/, async (msg) => {
     const userId = msg.from.id;
-    const venues = concertService.getVenues();
-    const subscribedVenues = userService.getSubscribedVenues(userId);
-    
-    const keyboard = {
-        inline_keyboard: venues.map(venue => {
-            const isSubscribed = subscribedVenues.includes(venue);
-            return [{
-                text: `${venue} ${isSubscribed ? '✅' : ''}`,
-                callback_data: `venue_${venue}`
-            }];
-        })
-    };
 
-    await bot.sendMessage(userId, 'Select a venue (✅ - subscribed to notifications):', { reply_markup: keyboard });
+    try {
+        const venues = await concertService.getVenues(); // Убедимся, что getVenues возвращает данные
+        const subscribedVenues = await userService.getSubscribedVenues(userId); // Получаем подписанные локации из базы данных
+
+        if (venues.length === 0) {
+            await bot.sendMessage(userId, 'No venues available at the moment.');
+            return;
+        }
+
+        const keyboard = {
+            inline_keyboard: venues.map(venue => {
+                const isSubscribed = subscribedVenues.includes(venue);
+                return [{
+                    text: `${venue} ${isSubscribed ? '✅' : ''}`,
+                    callback_data: `venue_${venue}`
+                }];
+            })
+        };
+
+        await bot.sendMessage(userId, 'Select a venue (✅ - subscribed to notifications):', { reply_markup: keyboard });
+    } catch (error) {
+        console.error('Error fetching venues:', error);
+        await bot.sendMessage(userId, 'There was an error loading venues. Please try again later.');
+    }
 });
 
 // Add handler for favorites button
