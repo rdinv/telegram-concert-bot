@@ -368,7 +368,8 @@ bot.on('callback_query', async (callbackQuery) => {
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
-                    await updateConcertMessage(callbackQuery.message, userId, concert, true);
+                    // Передаем `true` для обновления кнопки на "Remove from favorites"
+                    await updateConcertMessage(callbackQuery.message, concert, true);
                 }
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, {
@@ -393,7 +394,8 @@ bot.on('callback_query', async (callbackQuery) => {
 
                 const concert = await concertService.getConcertById(concertId);
                 if (concert) {
-                    await updateConcertMessage(callbackQuery.message, userId, concert, false);
+                    // Передаем `false` для обновления кнопки на "Add to favorites"
+                    await updateConcertMessage(callbackQuery.message, concert, false);
                 }
             } else {
                 await bot.answerCallbackQuery(callbackQuery.id, {
@@ -411,7 +413,7 @@ bot.on('callback_query', async (callbackQuery) => {
 });
 
 // Function to update concert message with updated subscription status
-async function updateConcertMessage(message, userId, concert, isSubscribed) {
+async function updateConcertMessage(message, concert, isSubscribed) {
     try {
         const newMessage = formatConcertMessage(concert);
 
@@ -441,7 +443,7 @@ async function updateConcertMessage(message, userId, concert, isSubscribed) {
             });
         }
     } catch (error) {
-        console.error(`Error updating concert message for user ${userId}:`, error);
+        console.error(`Error updating concert message for concert ${concert.id}:`, error);
     }
 }
 
