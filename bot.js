@@ -496,7 +496,7 @@ bot.on('callback_query', async (callbackQuery) => {
 // Function to update concert message with updated subscription status
 async function updateConcertMessage(message, userId, concert) {
     try {
-        const newMessage = formatConcertMessage(concert);
+        // Проверяем актуальный статус подписки из базы данных
         const isSubscribed = await userService.isSubscribed(userId, concert.id);
 
         const keyboard = {
@@ -508,6 +508,8 @@ async function updateConcertMessage(message, userId, concert) {
                 ]
             ]
         };
+
+        const newMessage = formatConcertMessage(concert);
 
         if (message.photo) {
             await bot.editMessageCaption(newMessage, {
