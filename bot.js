@@ -212,4 +212,152 @@ bot.onText(/📍 Concerts by location/, async (msg) => {
     }
 });
 
+bot.on('callback_query', async (callbackQuery) => {
+    const userId = callbackQuery.from.id;
+    const data = callbackQuery.data;
+
+    if (data.startsWith('venue_')) {
+        const venue = data.replace('venue_', '');
+        try {
+            const isSubscribed = await userService.isSubscribedToVenue(userId, venue);
+
+            const subscriptionKeyboard = {
+                inline_keyboard: [
+                    [
+                        {
+                            text: isSubscribed ? '❌ Unsubscribe from venue' : '🔔 Subscribe to venue',
+                            callback_data: isSubscribed ? `unsub_venue_${venue}` : `sub_venue_${venue}`
+                        }
+                    ],
+                    [
+                        {
+                            text: '📋 Show concerts',
+                            callback_data: `show_venue_${venue}`
+                        }
+                    ]
+                ]
+            };
+
+            await bot.editMessageText(
+                `Venue: ${venue}\n${isSubscribed ? '✅ You are subscribed to notifications' : ''}`,
+                {
+                    chat_id: callbackQuery.message.chat.id,
+                    message_id: callbackQuery.message.message_id,
+                    reply_markup: subscriptionKeyboard
+                }
+            );
+        } catch (error) {
+            console.error(`Error handling venue callback for ${venue}:`, error);
+            await bot.answerCallbackQuery(callbackQuery.id, {
+                text: 'An error occurred. Please try again later.',
+                show_alert: true
+            });
+        }
+    } else if (data.startsWith('sub_venue_')) {
+        const venue = data.replace('sub_venue_', '');
+        try {
+            await userService.subscribeToVenue(userId, venue);
+            await bot.answerCallbackQuery(callbackQuery.id, {
+                text: `Subscribed to notifications for ${venue}!`
+            });
+
+            const subscriptionKeyboard = {
+                inline_keyboard: [
+                    [
+                        {
+                            text: '❌ Unsubscribe from venue',
+                            callback_data: `unsub_venue_${venue}`
+                        }
+                    ],
+                    [
+                        {
+                            text: '📋 Show concerts',
+                            callback_data: `show_venue_${venue}`
+                        }
+                    ]
+                ]
+            };
+
+            await bot.editMessageText(
+                `Venue: ${venue}\n✅ You are subscribed to notifications`,
+                {
+                    chat_id: callbackQuery.message.chat.id,
+                    message_id: callbackQuery.message.message_id,
+                    reply_markup: subscriptionKeyboard
+                }
+            );
+        } catch (error) {
+            console.error(`Error subscribing to venue ${venue}:`, error);
+            await bot.answerCallbackQuery(callbackQuery.id, {
+                text: 'An error occurred. Please try again later.',
+                show_alert: true
+            });
+        }
+    } else if (data.startsWith('unsub_venue_')) {
+        const venue = data.replace('unsub_venue_', '');
+        try {
+            await userService.unsubscribeFromVenue(userId, venue);
+            await bot.answerCallbackQuery(callbackQuery.id, {
+                text: `Unsubscribed from notifications for ${venue}`
+            });
+
+            const subscriptionKeyboard = {
+                inline_keyboard: [
+                    [
+                        {
+                            text: '🔔 Subscribe to venue',
+                            callback_data: `sub_venue_${venue}`
+                        }
+                    ],
+                    [
+                        {
+                            text: '📋 Show concerts',
+                            callback_data: `show_venue_${venue}`
+                        }
+                    ]
+                ]
+            };
+
+            await bot.editMessageText(
+                `Venue: ${venue}`,
+                {
+                    chat_id: callbackQuery.message.chat.id,
+                    message_id: callbackQuery.message.message_id,
+                    reply_markup: subscriptionKeyboard
+                }
+            );
+        } catch (error) {
+            console.error(`Error unsubscribing from venue ${venue}:`, error);
+            await bot.answerCallbackQuery(callbackQuery.id, {
+                text: 'An error occurred. Please try again later.',
+                show_alert: true
+            });
+        }
+    } else if (data.startsWith('show_venue_')) {
+        const venue = data.replace('show_venue_', '');
+        try {
+            const concerts = await concertService.getConcertsByVenue(venue);
+
+            if (concerts.length === 0) {
+                await bot.answerCallbackQuery(callbackQuery.id, {
+                    text: `No upcoming concerts found for ${venue}.`,
+                    show_alert: true
+                });
+                return;
+            }
+
+            for (const concert of concerts) {
+                await sendConcertNotification(userId, concert);
+            }
+            await bot.answerCallbackQuery(callbackQuery.id);
+        } catch (error) {
+            console.error(`Error showing concerts for venue ${venue}:`, error);
+            await bot.answerCallbackQuery(callbackQuery.id, {
+                text: 'An error occurred. Please try again later.',
+                show_alert: true
+            });
+        }
+    }
+});
+
 initialize().catch(console.error);
