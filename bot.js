@@ -501,7 +501,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
 async function updateConcertMessage(message, userId, concert) {
     try {
-        console.log(`Fetching subscription status for user ${userId} and concert ${concert.id}`);
+        console.log(`Updating message for concert:`, concert); // Логирование данных концерта
         const isSubscribed = await userService.isSubscribed(userId, concert.id);
 
         const keyboard = {
@@ -517,7 +517,6 @@ async function updateConcertMessage(message, userId, concert) {
         const newMessage = formatConcertMessage(concert);
 
         if (message.photo) {
-            console.log(`Editing photo caption for concert ${concert.id}`);
             await bot.editMessageCaption(newMessage, {
                 chat_id: message.chat.id,
                 message_id: message.message_id,
@@ -525,7 +524,6 @@ async function updateConcertMessage(message, userId, concert) {
                 reply_markup: keyboard
             });
         } else {
-            console.log(`Editing text message for concert ${concert.id}`);
             await bot.editMessageText(newMessage, {
                 chat_id: message.chat.id,
                 message_id: message.message_id,
@@ -534,7 +532,7 @@ async function updateConcertMessage(message, userId, concert) {
             });
         }
     } catch (error) {
-        console.error(`Error updating concert message for concert ${concert.id}:`, error);
+        console.error(`Error updating concert message:`, error);
     }
 }
 
