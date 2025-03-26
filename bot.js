@@ -122,9 +122,9 @@ async function sendConcertNotification(userId, concert) {
 }
 
 function formatConcertMessage(concert) {
-    const artistsList = Array.isArray(concert.artists)
+    const artistsList = Array.isArray(concert.artists) && concert.artists.length > 0
         ? concert.artists
-            .map(artist => `• <a href="${artist.link}">${artist.name}</a>`)
+            .map(artist => `• <a href="${artist.link || '#'}">${artist.name}</a>`)
             .join('\n')
         : 'No artists available';
 
