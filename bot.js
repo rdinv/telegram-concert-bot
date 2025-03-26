@@ -122,15 +122,17 @@ async function sendConcertNotification(userId, concert) {
 }
 
 function formatConcertMessage(concert) {
-    const artistsList = concert.artists
-        .map(artist => `• <a href="${artist.link}">${artist.name}</a>`)
-        .join('\n');
+    const artistsList = Array.isArray(concert.artists)
+        ? concert.artists
+            .map(artist => `• <a href="${artist.link}">${artist.name}</a>`)
+            .join('\n')
+        : 'No artists available';
 
     return `
 🎵 <b>${concert.title}</b>
 📅 ${new Date(concert.date).toLocaleString('ru-RU')}
 📍 ${concert.venue}
-💰 ${concert.price}
+💰 ${concert.price || 'Price not specified'}
 
 <b>Artists:</b>
 ${artistsList}
