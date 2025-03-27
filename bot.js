@@ -509,6 +509,11 @@ async function updateConcertMessage(message, userId, concert) {
         console.log(`Updating message for concert:`, concert); // Логирование данных концерта
         const isSubscribed = await userService.isSubscribed(userId, concert.id);
 
+        // Проверка, что объект concert содержит информацию об артистах
+        if (!concert.artists || concert.artists.length === 0) {
+            console.warn(`Concert ${concert.id} has no artists available.`);
+        }
+
         const keyboard = {
             inline_keyboard: [
                 [
@@ -519,7 +524,7 @@ async function updateConcertMessage(message, userId, concert) {
             ]
         };
 
-        const newMessage = formatConcertMessage(concert);
+        const newMessage = formatConcertMessage(concert); // Используем функцию форматирования сообщения
 
         if (message.photo) {
             await bot.editMessageCaption(newMessage, {
