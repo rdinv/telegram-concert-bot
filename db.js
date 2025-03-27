@@ -38,10 +38,18 @@ async function initializeDatabase() {
                 venue VARCHAR(255),
                 price VARCHAR(255),
                 poster TEXT,
-                subscribers TEXT
+                subscribers TEXT,
+                artists TEXT
             )
         `);
         console.log('Concerts table ensured.');
+
+        // Проверяем и добавляем поле artists, если оно отсутствует
+        const [columns] = await connection.query(`SHOW COLUMNS FROM concerts LIKE 'artists'`);
+        if (columns.length === 0) {
+            await connection.query(`ALTER TABLE concerts ADD artists TEXT`);
+            console.log('Added missing column "artists" to concerts table.');
+        }
     } catch (error) {
         console.error('Error initializing database:', error);
         throw error;
