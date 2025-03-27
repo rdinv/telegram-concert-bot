@@ -34,7 +34,7 @@ function setupScheduledTasks() {
         }
     });
 
-    schedule.scheduleJob('0 19 * * *', async () => {
+    schedule.scheduleJob('* * * * *', async () => {
         try {
             await checkUpcomingConcerts();
         } catch (error) {
@@ -68,24 +68,18 @@ async function checkUpcomingConcerts() {
     try {
         console.log('Checking for upcoming concerts...');
         const concerts = await concertService.getUpcomingConcerts();
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(19, 0, 0, 0);
+        const fiveDaysFromNow = new Date();
+        fiveDaysFromNow.setDate(fiveDaysFromNow.getDate() + 5);
+        fiveDaysFromNow.setHours(0, 0, 0, 0);
 
         for (const concert of concerts) {
             const concertDate = new Date(concert.date);
             concertDate.setHours(0, 0, 0, 0);
 
-            if (concertDate.getTime() === tomorrow.getTime()) {
+            if (concertDate.getTime() === fiveDaysFromNow.getTime()) {
                 const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
                 for (const user of venueSubscribers) {
-                    await bot.sendMessage(user.userId, '🔔 Reminder! You have a concert tomorrow:');
-                    await sendConcertNotification(user.userId, concert);
-                }
-
-                const concertSubscribers = await userService.getSubscribedUsers(concert.id);
-                for (const user of concertSubscribers) {
-                    await bot.sendMessage(user.userId, '🔔 Reminder! You have a concert tomorrow:');
+                    await bot.sendMessage(user.userId, '🔔 Reminder! You have a concert in 5 days:');
                     await sendConcertNotification(user.userId, concert);
                 }
             }
