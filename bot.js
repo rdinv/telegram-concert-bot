@@ -68,18 +68,17 @@ async function checkUpcomingConcerts() {
     try {
         console.log('Checking for upcoming concerts...');
         const concerts = await concertService.getUpcomingConcerts();
+        const now = new Date();
         const fiveDaysFromNow = new Date();
-        fiveDaysFromNow.setDate(fiveDaysFromNow.getDate() + 5);
-        fiveDaysFromNow.setHours(0, 0, 0, 0);
+        fiveDaysFromNow.setDate(now.getDate() + 5);
 
         for (const concert of concerts) {
             const concertDate = new Date(concert.date);
-            concertDate.setHours(0, 0, 0, 0);
 
-            if (concertDate.getTime() === fiveDaysFromNow.getTime()) {
+            if (concertDate <= fiveDaysFromNow && concertDate >= now) {
                 const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
                 for (const user of venueSubscribers) {
-                    await bot.sendMessage(user.userId, '🔔 Reminder! You have a concert in 5 days:');
+                    await bot.sendMessage(user.userId, '🔔 Reminder! You have a concert coming up:');
                     await sendConcertNotification(user.userId, concert);
                 }
             }
