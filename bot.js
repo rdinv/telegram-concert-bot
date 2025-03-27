@@ -136,7 +136,7 @@ function formatConcertMessage(concert) {
 💰 ${concert.price || 'Price not specified'}
 
 <b>Artists:</b>
-${artistsList}
+${artistsList === 'No artists available' ? 'No artists available' : artistsList}
     `.trim();
 }
 

@@ -342,9 +342,10 @@ class ConcertService {
                     link: link.url
                 }));
 
+                // Убедимся, что если артистов нет, это не приводит к ошибкам
                 const concert = {
                     id: concertId,
-                    title: event.title,  // Полное название со всеми группами и их информацией
+                    title: event.title,
                     date: eventDate.toISOString(),
                     venue: 'Chemiefabrik',
                     price: event.preis || 'Preis is not specified',
@@ -357,8 +358,8 @@ class ConcertService {
                     startTime,
                     doorTime,
                     ticketUrl: event.ticketUrl || '',
-                    genreLocation: event.title,  // Используем полное название как genreLocation
-                    artists,  // Список артистов со ссылками
+                    genreLocation: event.title,
+                    artists: artists.length > 0 ? artists : [], // Убедимся, что массив артистов не пустой
                     subscribers: []
                 };
 
