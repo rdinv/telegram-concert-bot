@@ -496,7 +496,11 @@ class ConcertService {
                 'SELECT * FROM concerts WHERE id = ?',
                 [id]
             );
-            return rows.length > 0 ? rows[0] : null;
+            if (rows.length > 0) {
+                console.log('Fetched concert:', rows[0]); // Добавьте это для отладки
+                return rows[0];
+            }
+            return null;
         } finally {
             connection.release();
         }

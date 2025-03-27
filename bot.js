@@ -91,6 +91,11 @@ async function checkUpcomingConcerts() {
 
 async function sendConcertNotification(userId, concert) {
     try {
+        // Преобразуем строку JSON обратно в объект, если это необходимо
+        if (typeof concert.artists === 'string') {
+            concert.artists = JSON.parse(concert.artists);
+        }
+
         const message = formatConcertMessage(concert);
         const isSubscribed = await userService.isSubscribed(userId, concert.id);
 
