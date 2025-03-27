@@ -48,13 +48,22 @@ async function checkNewConcerts() {
         const concerts = await concertService.getUpcomingConcerts();
         const users = await userService.getAllUsers();
 
+        // Получаем существующие концерты из базы данных
+        const existingConcerts = await concertService.getUpcomingConcerts();
+
+        // Создаем множество ID существующих концертов для быстрого поиска
+        const existingConcertIds = new Set(existingConcerts.map(concert => concert.id));
+
         for (const concert of concerts) {
-            const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
-            for (const user of venueSubscribers) {
-                if (!await userService.wasUserNotifiedAboutConcert(user.userId, concert.id)) {
-                    await bot.sendMessage(user.userId, `🎵 New concert at ${concert.venue}!`);
-                    await sendConcertNotification(user.userId, concert);
-                    await userService.markConcertAsNotified(user.userId, concert.id);
+            // Проверяем, является ли концерт новым
+            if (!existingConcertIds.has(concert.id)) {
+                const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
+                for (const user of venueSubscribers) {
+                    if (!await userService.wasUserNotifiedAboutConcert(user.userId, concert.id)) {
+                        await bot.sendMessage(user.userId, `🎵 New concert at ${concert.venue}!`);
+                        await sendConcertNotification(user.userId, concert);
+                        await userService.markConcertAsNotified(user.userId, concert.id);
+                    }
                 }
             }
         }
