@@ -510,8 +510,8 @@ async function updateConcertMessage(message, userId, concert) {
         const isSubscribed = await userService.isSubscribed(userId, concert.id);
 
         // Проверка, что объект concert содержит информацию об артистах
-        if (!concert.artists || concert.artists.length === 0) {
-            console.warn(`Concert ${concert.id} has no artists available.`);
+        if (typeof concert.artists === 'string') {
+            concert.artists = JSON.parse(concert.artists);
         }
 
         const keyboard = {
