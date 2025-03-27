@@ -25,7 +25,7 @@ async function initialize() {
 }
 
 function setupScheduledTasks() {
-    schedule.scheduleJob('0 0 * * *', async () => {
+    schedule.scheduleJob('0 20 * * *', async () => {
         try {
             await concertService.updateConcerts();
             await checkNewConcerts();
@@ -34,7 +34,7 @@ function setupScheduledTasks() {
         }
     });
 
-    schedule.scheduleJob('0 20 * * *', async () => {
+    schedule.scheduleJob('0 19 * * *', async () => {
         try {
             await checkUpcomingConcerts();
         } catch (error) {
@@ -70,15 +70,21 @@ async function checkUpcomingConcerts() {
         const concerts = await concertService.getUpcomingConcerts();
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0);
+        tomorrow.setHours(19, 0, 0, 0);
 
         for (const concert of concerts) {
             const concertDate = new Date(concert.date);
             concertDate.setHours(0, 0, 0, 0);
 
             if (concertDate.getTime() === tomorrow.getTime()) {
-                const subscribedUsers = await userService.getSubscribedUsers(concert.id);
-                for (const user of subscribedUsers) {
+                const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
+                for (const user of venueSubscribers) {
+                    await bot.sendMessage(user.userId, '🔔 Reminder! You have a concert tomorrow:');
+                    await sendConcertNotification(user.userId, concert);
+                }
+
+                const concertSubscribers = await userService.getSubscribedUsers(concert.id);
+                for (const user of concertSubscribers) {
                     await bot.sendMessage(user.userId, '🔔 Reminder! You have a concert tomorrow:');
                     await sendConcertNotification(user.userId, concert);
                 }
