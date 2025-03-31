@@ -189,7 +189,7 @@ bot.onText(/\/start/, async (msg) => {
             }
         };
 
-        await bot.sendMessage(userId, 'Hello! I am a concert tracking bot 🎶🤘', keyboard);
+        await bot.sendMessage(userId, 'Hello! I am a concert tracking bot 🎶🤘 Press "❓ HELP" to learn how I work.', keyboard);
     } catch (error) {
         console.error('Error handling /start command:', error);
     }
@@ -201,19 +201,19 @@ bot.onText(/❓ Help/, async (msg) => {
 Welcome to the Concert Tracking Bot! 
 Here's how I can help you:
 
-🎵 <b><a href="tg://msg?text=🎵%20View%20all%20concerts">View all concerts</a></b>:
+🎵 <b>View all concerts</b>:
 Shows a list of 20 upcoming concerts.
 
-📍 <b><a href="tg://msg?text=📍%20Concerts%20by%20location">Concerts by location</a></b>:
+📍 <b>Concerts by location</b>:
 Lets you subscribe to specific venues and view concerts happening there.
 Subscribe to venues and receive daily concert updates at 20:00.
 Notifications are sent only if new concerts appear.
 On first subscription, you'll receive alerts for all upcoming concerts that haven’t been announced yet.
 
-⭐ <b><a href="tg://msg?text=⭐%20Favorites">Favorites</a></b>:
+⭐ <b>Favorites</b>:
 Displays your favorite concerts. A reminder for subscribed concerts will be sent a day before the event at 10:00. You can also view your subscribed concerts using this button.
 
-❓ <b><a href="tg://msg?text=❓%20Help">Help</a></b>:
+❓ <b>Help</b>:
 Shows this help message.
 
 You can also subscribe to venues or add concerts to your favorites by interacting with the buttons in the concert notifications.
