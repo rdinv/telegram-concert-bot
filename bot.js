@@ -47,11 +47,11 @@ async function checkNewConcerts() {
     try {
         console.log('Checking for new concerts...');
         
-        // Fetch new concerts from APIs
+        // Получаем новые концерты из API
         const concertsFromAPI = await concertService.getUpcomingConcertsFromAPI();
         console.log('New concerts from API:', concertsFromAPI);
 
-        // Fetch existing concerts from the database
+        // Получаем существующие концерты из базы данных
         const existingConcerts = await concertService.getUpcomingConcerts();
         console.log('Existing concerts in DB:', existingConcerts);
 
@@ -61,17 +61,21 @@ async function checkNewConcerts() {
             if (!existingConcertIds.has(concert.id)) {
                 console.log(`New concert found: ${concert.title}`);
                 
-                // Add the new concert to the database
+                // Добавляем новый концерт в базу данных
                 await concertService.addConcert(concert);
 
-                // Notify users subscribed to the venue
                 const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
                 console.log(`Subscribers for venue ${concert.venue}:`, venueSubscribers);
 
                 for (const user of venueSubscribers) {
-                    console.log(`Sending message to user ${user.userId}: 🎵 New concert at ${concert.venue}!`);
-                    await bot.sendMessage(user.userId, `🎵 New concert at ${concert.venue}!`);
-                    await sendConcertNotification(user.userId, concert);
+                    if (!await userService.wasUserNotifiedAboutConcert(user.userId, concert.id)) {
+                        console.log(`Sending message to user ${user.userId}: 🎵 New concert at ${concert.venue}!`);
+                        await bot.sendMessage(user.userId, `🎵 New concert at ${concert.venue}!`);
+                        await sendConcertNotification(user.userId, concert);
+                        await userService.markConcertAsNotified(user.userId, concert.id);
+                    } else {
+                        console.log(`User ${user.userId} has already been notified about concert ${concert.id}`);
+                    }
                 }
             } else {
                 console.log(`Concert ${concert.title} already exists in the database.`);
