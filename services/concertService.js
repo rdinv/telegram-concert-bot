@@ -632,7 +632,18 @@ class ConcertService {
     async addConcert(concert) {
         const connection = await pool.getConnection();
         try {
-            const formattedDate = new Date(concert.date).toISOString().slice(0, 19).replace('T', ' '); // Форматируем дату
+            // Check if the concert already exists
+            const [existingConcert] = await connection.query(
+                'SELECT id FROM concerts WHERE id = ?',
+                [concert.id]
+            );
+
+            if (existingConcert.length > 0) {
+                console.log(`Concert with ID ${concert.id} already exists. Skipping insertion.`);
+                return; // Skip insertion if the concert already exists
+            }
+
+            const formattedDate = new Date(concert.date).toISOString().slice(0, 19).replace('T', ' '); // Format date
             await connection.query(
                 `INSERT INTO concerts (id, title, date, venue, price, poster, subscribers, artists)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -644,7 +655,7 @@ class ConcertService {
                     concert.price,
                     concert.poster,
                     JSON.stringify(concert.subscribers || []),
-                    JSON.stringify(concert.artists || []) // Сохраняем артистов в формате JSON
+                    JSON.stringify(concert.artists || []) // Save artists as JSON
                 ]
             );
             console.log(`Concert ${concert.title} added to the database.`);
