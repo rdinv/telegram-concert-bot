@@ -201,13 +201,13 @@ bot.onText(/❓ Help/, async (msg) => {
 Welcome to the Concert Tracking Bot! 
 Here's how I can help you:
 
-🎵 <b><a href="tg://msg?text=🎵 View all concerts">View all concerts</a></b>: Shows a list of 20 upcoming concerts.
+🎵 <b><a href="tg://msg?text=🎵%20View%20all%20concerts">View all concerts</a></b>: Shows a list of 20 upcoming concerts.
 
-📍 <b><a href="tg://msg?text=📍 Concerts by location">Concerts by location</a></b>: Lets you subscribe to specific venues and view concerts happening there. Subscribe to venues and receive daily concert updates at 20:00. Notifications are sent only if new concerts appear. On first subscription, you'll receive alerts for all upcoming concerts that haven’t been announced yet.
+📍 <b><a href="tg://msg?text=📍%20Concerts%20by%20location">Concerts by location</a></b>: Lets you subscribe to specific venues and view concerts happening there. Subscribe to venues and receive daily concert updates at 20:00. Notifications are sent only if new concerts appear. On first subscription, you'll receive alerts for all upcoming concerts that haven’t been announced yet.
 
-⭐ <b><a href="tg://msg?text=⭐ Favorites">Favorites</a></b>: Displays your favorite concerts. A reminder for subscribed concerts will be sent a day before the event at 10:00. You can also view your subscribed concerts using this button.
+⭐ <b><a href="tg://msg?text=⭐%20Favorites">Favorites</a></b>: Displays your favorite concerts. A reminder for subscribed concerts will be sent a day before the event at 10:00. You can also view your subscribed concerts using this button.
 
-❓ <b><a href="tg://msg?text=❓ Help">Help</a></b>: Shows this help message.
+❓ <b><a href="tg://msg?text=❓%20Help">Help</a></b>: Shows this help message.
 
 You can also subscribe to venues or add concerts to your favorites by interacting with the buttons in the concert notifications.
 
