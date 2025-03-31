@@ -46,19 +46,26 @@ function setupScheduledTasks() {
 async function checkNewConcerts() {
     try {
         console.log('Checking for new concerts...');
-        const concerts = await concertService.getUpcomingConcerts(); // Получаем новые концерты из API
-        console.log('New concerts from API:', concerts); // Логируем новые концерты
+        
+        // Получаем новые концерты из API
+        const concertsFromAPI = await concertService.getUpcomingConcertsFromAPI();
+        console.log('New concerts from API:', concertsFromAPI);
 
+        // Получаем существующие концерты из базы данных
         const existingConcerts = await concertService.getUpcomingConcerts();
-        console.log('Existing concerts in DB:', existingConcerts); // Логируем существующие концерты
+        console.log('Existing concerts in DB:', existingConcerts);
 
         const existingConcertIds = new Set(existingConcerts.map(concert => concert.id));
 
-        for (const concert of concerts) {
+        for (const concert of concertsFromAPI) {
             if (!existingConcertIds.has(concert.id)) {
-                console.log(`New concert found: ${concert.title}`); // Логируем новый концерт
+                console.log(`New concert found: ${concert.title}`);
+                
+                // Добавляем новый концерт в базу данных
+                await concertService.addConcert(concert);
+
                 const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
-                console.log(`Subscribers for venue ${concert.venue}:`, venueSubscribers); // Логируем подписчиков
+                console.log(`Subscribers for venue ${concert.venue}:`, venueSubscribers);
 
                 for (const user of venueSubscribers) {
                     if (!await userService.wasUserNotifiedAboutConcert(user.userId, concert.id)) {
@@ -107,7 +114,6 @@ async function checkConcertsForReminders() {
 
 async function sendConcertNotification(userId, concert) {
     try {
-        // Преобразуем строку JSON обратно в объект, если это необходимо
         if (typeof concert.artists === 'string') {
             concert.artists = JSON.parse(concert.artists);
         }
