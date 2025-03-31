@@ -66,8 +66,12 @@ async function checkNewConcerts() {
                         await bot.sendMessage(user.userId, `🎵 New concert at ${concert.venue}!`);
                         await sendConcertNotification(user.userId, concert);
                         await userService.markConcertAsNotified(user.userId, concert.id);
+                    } else {
+                        console.log(`User ${user.userId} has already been notified about concert ${concert.id}`);
                     }
                 }
+            } else {
+                console.log(`Concert ${concert.title} already exists in the database.`);
             }
         }
     } catch (error) {
