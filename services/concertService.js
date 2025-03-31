@@ -57,8 +57,26 @@ class ConcertService {
         }
     }
 
+    async removePastConcerts() {
+        const connection = await pool.getConnection();
+        try {
+            console.log('Removing past concerts...');
+            const [result] = await connection.query(
+                'DELETE FROM concerts WHERE date < NOW()'
+            );
+            console.log(`Removed ${result.affectedRows} past concerts.`);
+        } catch (error) {
+            console.error('Error removing past concerts:', error);
+        } finally {
+            connection.release();
+        }
+    }
+
     async updateConcerts() {
         try {
+            // Удаляем прошедшие концерты
+            await this.removePastConcerts();
+
             const [chemiefabrikEvents, alterSchlachthofEvents, jungeGardeEvents] = await Promise.all([
                 this.fetchChemiefabrikEvents(),
                 this.fetchAlterSchlachthofEvents(),
