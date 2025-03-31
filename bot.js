@@ -57,7 +57,6 @@ async function checkNewConcerts() {
 
         const existingConcertIds = new Set(existingConcerts.map(concert => concert.id));
 
-        // Filter only new concerts
         const newConcerts = concertsFromAPI.filter(concert => !existingConcertIds.has(concert.id));
 
         console.log(`Found ${newConcerts.length} new concerts.`);
