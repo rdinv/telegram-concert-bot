@@ -34,6 +34,7 @@ function setupScheduledTasks() {
         }
     });
 
+    // Check for concert reminders daily at 10:00 AM
     schedule.scheduleJob('0 10 * * *', async () => {
         try {
             await checkConcertsForReminders();
@@ -47,11 +48,11 @@ async function checkNewConcerts() {
     try {
         console.log('Checking for new concerts...');
         
-        // Получаем новые концерты из API
+        // Fetch new concerts from APIs
         const concertsFromAPI = await concertService.getUpcomingConcertsFromAPI();
         console.log('New concerts from API:', concertsFromAPI);
 
-        // Получаем существующие концерты из базы данных
+        // Fetch existing concerts from the database
         const existingConcerts = await concertService.getUpcomingConcerts();
         console.log('Existing concerts in DB:', existingConcerts);
 
@@ -61,9 +62,10 @@ async function checkNewConcerts() {
             if (!existingConcertIds.has(concert.id)) {
                 console.log(`New concert found: ${concert.title}`);
                 
-                // Добавляем новый концерт в базу данных
+                // Add the new concert to the database
                 await concertService.addConcert(concert);
 
+                // Notify users subscribed to the venue
                 const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
                 console.log(`Subscribers for venue ${concert.venue}:`, venueSubscribers);
 
