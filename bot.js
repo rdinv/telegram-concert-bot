@@ -200,17 +200,22 @@ bot.onText(/❓ Help/, async (msg) => {
     const helpMessage = `
 Welcome to the Concert Tracking Bot! Here's how I can help you:
 
-🎵 <b>View all concerts</b>: Shows a list of all upcoming concerts.
+🎵 <b>View all concerts</b>: Shows a list of 20 upcoming concerts.
 
-📍 <b>Concerts by location</b>: Lets you subscribe to specific venues and view concerts happening there.
+📍 <b>Concerts by location</b>: Lets you subscribe to specific venues and view concerts happening there. 
+    Subscribe to venues and receive daily concert updates at 20:00. Notifications are sent only if new 
+    concerts appear. On first subscription, you'll receive alerts 
+    for all upcoming concerts that haven’t been announced yet.
 
-⭐ <b>Favorites</b>: Displays your favorite concerts that you've added.
+⭐ <b>Favorites</b>: Displays your favorite concerts.
+    A reminder for subscribed concerts will be sent a day before the event at 10:00. 
+    You can also view your subscribed concerts using this button.
 
 ❓ <b>Help</b>: Shows this help message.
 
 You can also subscribe to venues or add concerts to your favorites by interacting with the buttons in the concert notifications.
 
-Enjoy the music! 🎶
+Enjoy the music! 🎶🤘
     `.trim();
 
     try {
