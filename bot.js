@@ -47,20 +47,22 @@ async function checkNewConcerts() {
     try {
         console.log('Checking for new concerts...');
         const concerts = await concertService.getUpcomingConcerts(); // Получаем новые концерты из API
-        const users = await userService.getAllUsers(); // Получаем всех пользователей
+        console.log('New concerts from API:', concerts); // Логируем новые концерты
 
-        // Получаем существующие концерты из базы данных
         const existingConcerts = await concertService.getUpcomingConcerts();
+        console.log('Existing concerts in DB:', existingConcerts); // Логируем существующие концерты
 
-        // Создаем множество ID существующих концертов для быстрого поиска
         const existingConcertIds = new Set(existingConcerts.map(concert => concert.id));
 
         for (const concert of concerts) {
-            // Проверяем, является ли концерт новым
             if (!existingConcertIds.has(concert.id)) {
+                console.log(`New concert found: ${concert.title}`); // Логируем новый концерт
                 const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
+                console.log(`Subscribers for venue ${concert.venue}:`, venueSubscribers); // Логируем подписчиков
+
                 for (const user of venueSubscribers) {
                     if (!await userService.wasUserNotifiedAboutConcert(user.userId, concert.id)) {
+                        console.log(`Sending message to user ${user.userId}: 🎵 New concert at ${concert.venue}!`);
                         await bot.sendMessage(user.userId, `🎵 New concert at ${concert.venue}!`);
                         await sendConcertNotification(user.userId, concert);
                         await userService.markConcertAsNotified(user.userId, concert.id);
