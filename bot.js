@@ -25,8 +25,8 @@ async function initialize() {
 }
 
 function setupScheduledTasks() {
-    // Check for new concerts every minute
-    schedule.scheduleJob('* * * * *', async () => {
+    //  Check for concert reminders daily at 20:00
+    schedule.scheduleJob('0 20 * * *', async () => {
         try {
             await checkNewConcerts();
         } catch (error) {
@@ -34,7 +34,7 @@ function setupScheduledTasks() {
         }
     });
 
-    // Check for concert reminders daily at 10:00 AM
+    // Check for concert reminders daily at 10:00
     schedule.scheduleJob('0 10 * * *', async () => {
         try {
             await checkConcertsForReminders();
