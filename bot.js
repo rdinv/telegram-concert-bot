@@ -25,7 +25,8 @@ async function initialize() {
 }
 
 function setupScheduledTasks() {
-    schedule.scheduleJob('0 19 * * *', async () => {
+    // Проверка новых концертов каждую минуту
+    schedule.scheduleJob('* * * * *', async () => {
         try {
             await checkNewConcerts();
         } catch (error) {
@@ -45,8 +46,8 @@ function setupScheduledTasks() {
 async function checkNewConcerts() {
     try {
         console.log('Checking for new concerts...');
-        const concerts = await concertService.getUpcomingConcerts();
-        const users = await userService.getAllUsers();
+        const concerts = await concertService.getUpcomingConcerts(); // Получаем новые концерты из API
+        const users = await userService.getAllUsers(); // Получаем всех пользователей
 
         // Получаем существующие концерты из базы данных
         const existingConcerts = await concertService.getUpcomingConcerts();
