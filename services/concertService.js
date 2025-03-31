@@ -519,6 +519,25 @@ class ConcertService {
         }
     }
 
+    async getUpcomingConcertsFromAPI() {
+        try {
+            const [chemiefabrikEvents, alterSchlachthofEvents, jungeGardeEvents] = await Promise.all([
+                this.fetchChemiefabrikEvents(),
+                this.fetchAlterSchlachthofEvents(),
+                this.fetchJungeGardeEvents()
+            ]);
+
+            return [
+                ...this.processChemiefabrikEvents(chemiefabrikEvents || []),
+                ...this.processAlterSchlachthofEvents(alterSchlachthofEvents || []),
+                ...this.processJungeGardeEvents(jungeGardeEvents || [])
+            ];
+        } catch (error) {
+            console.error('Error fetching concerts from APIs:', error);
+            return [];
+        }
+    }
+
     async getVenues() {
         const connection = await pool.getConnection();
         try {

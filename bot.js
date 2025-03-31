@@ -25,7 +25,7 @@ async function initialize() {
 }
 
 function setupScheduledTasks() {
-    // Проверка новых концертов каждую минуту
+    // Check for new concerts every minute
     schedule.scheduleJob('* * * * *', async () => {
         try {
             await checkNewConcerts();
