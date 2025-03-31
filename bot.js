@@ -183,7 +183,7 @@ bot.onText(/\/start/, async (msg) => {
                 keyboard: [
                     ['🎵 View all concerts'],
                     ['📍 Concerts by location'],
-                    ['⭐ Favorites']
+                    ['⭐ Favorites', '❓ Help']
                 ],
                 resize_keyboard: true
             }
@@ -192,6 +192,31 @@ bot.onText(/\/start/, async (msg) => {
         await bot.sendMessage(userId, 'Hello! I am a concert tracking bot. How can I help you?', keyboard);
     } catch (error) {
         console.error('Error handling /start command:', error);
+    }
+});
+
+bot.onText(/❓ Help/, async (msg) => {
+    const userId = msg.from.id;
+    const helpMessage = `
+Welcome to the Concert Tracking Bot! Here's how I can help you:
+
+🎵 <b>View all concerts</b>: Shows a list of all upcoming concerts.
+
+📍 <b>Concerts by location</b>: Lets you subscribe to specific venues and view concerts happening there.
+
+⭐ <b>Favorites</b>: Displays your favorite concerts that you've added.
+
+❓ <b>Help</b>: Shows this help message.
+
+You can also subscribe to venues or add concerts to your favorites by interacting with the buttons in the concert notifications.
+
+Enjoy the music! 🎶
+    `.trim();
+
+    try {
+        await bot.sendMessage(userId, helpMessage, { parse_mode: 'HTML' });
+    } catch (error) {
+        console.error('Error sending help message:', error);
     }
 });
 
