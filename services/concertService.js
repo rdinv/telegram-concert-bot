@@ -609,6 +609,32 @@ class ConcertService {
         );
         return subscribedConcerts;
     }
+
+    async addConcert(concert) {
+        const connection = await pool.getConnection();
+        try {
+            const formattedDate = new Date(concert.date).toISOString().slice(0, 19).replace('T', ' '); // Форматируем дату
+            await connection.query(
+                `INSERT INTO concerts (id, title, date, venue, price, poster, subscribers, artists)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    concert.id,
+                    concert.title,
+                    formattedDate,
+                    concert.venue,
+                    concert.price,
+                    concert.poster,
+                    JSON.stringify(concert.subscribers || []),
+                    JSON.stringify(concert.artists || []) // Сохраняем артистов в формате JSON
+                ]
+            );
+            console.log(`Concert ${concert.title} added to the database.`);
+        } catch (error) {
+            console.error('Error adding concert to database:', error);
+        } finally {
+            connection.release();
+        }
+    }
 }
 
 module.exports = new ConcertService();
