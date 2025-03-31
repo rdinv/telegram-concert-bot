@@ -61,10 +61,33 @@ class ConcertService {
         const connection = await pool.getConnection();
         try {
             console.log('Removing past concerts...');
-            const [result] = await connection.query(
-                'DELETE FROM concerts WHERE date < NOW()'
+            
+            // Get IDs of past concerts
+            const [pastConcerts] = await connection.query(
+                'SELECT id FROM concerts WHERE date < NOW()'
             );
-            console.log(`Removed ${result.affectedRows} past concerts.`);
+            const pastConcertIds = pastConcerts.map(concert => concert.id);
+
+            if (pastConcertIds.length > 0) {
+                // Remove past concerts
+                const [result] = await connection.query(
+                    'DELETE FROM concerts WHERE id IN (?)',
+                    [pastConcertIds]
+                );
+                console.log(`Removed ${result.affectedRows} past concerts.`);
+
+                // Remove references to past concerts in users' lastNotifiedConcerts
+                const [userUpdateResult] = await connection.query(
+                    `UPDATE users 
+                     SET lastNotifiedConcerts = JSON_REMOVE(lastNotifiedConcerts, 
+                         ${pastConcertIds.map((_, i) => `'$[${i}]'`).join(', ')})
+                     WHERE JSON_CONTAINS(lastNotifiedConcerts, ?)`,
+                    [JSON.stringify(pastConcertIds)]
+                );
+                console.log(`Updated ${userUpdateResult.affectedRows} users to remove past concerts from lastNotifiedConcerts.`);
+            } else {
+                console.log('No past concerts found to remove.');
+            }
         } catch (error) {
             console.error('Error removing past concerts:', error);
         } finally {
