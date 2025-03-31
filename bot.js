@@ -57,24 +57,24 @@ async function checkNewConcerts() {
 
         const existingConcertIds = new Set(existingConcerts.map(concert => concert.id));
 
-        for (const concert of concertsFromAPI) {
-            if (!existingConcertIds.has(concert.id)) {
-                console.log(`New concert found: ${concert.title}`);
-                
-                // Add the new concert to the database
-                await concertService.addConcert(concert);
+        const newConcerts = concertsFromAPI.filter(concert => !existingConcertIds.has(concert.id));
 
-                // Notify users subscribed to the venue
-                const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
-                console.log(`Subscribers for venue ${concert.venue}:`, venueSubscribers);
+        console.log(`Found ${newConcerts.length} new concerts.`);
 
-                for (const user of venueSubscribers) {
-                    console.log(`Sending message to user ${user.userId}: 🎵 New concert at ${concert.venue}!`);
-                    await bot.sendMessage(user.userId, `🎵 New concert at ${concert.venue}!`);
-                    await sendConcertNotification(user.userId, concert);
-                }
-            } else {
-                console.log(`Concert ${concert.title} already exists in the database.`);
+        for (const concert of newConcerts) {
+            console.log(`Adding new concert to database: ${concert.title}`);
+            
+            // Add the new concert to the database
+            await concertService.addConcert(concert);
+
+            // Notify users subscribed to the venue
+            const venueSubscribers = await userService.getUsersBySubscribedVenue(concert.venue);
+            console.log(`Subscribers for venue ${concert.venue}:`, venueSubscribers);
+
+            for (const user of venueSubscribers) {
+                console.log(`Sending message to user ${user.userId}: 🎵 New concert at ${concert.venue}!`);
+                await bot.sendMessage(user.userId, `🎵 New concert at ${concert.venue}!`);
+                await sendConcertNotification(user.userId, concert);
             }
         }
     } catch (error) {
