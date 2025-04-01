@@ -189,7 +189,7 @@ bot.onText(/\/start/, async (msg) => {
             }
         };
 
-        await bot.sendMessage(userId, 'Hello! I am a concert tracking bot 🎶🤘 Press "❓ HELP" to learn how I work.', keyboard);
+        await bot.sendMessage(userId, 'Hello! I am a concert tracking bot 🎶🤘 </b> Press "❓ HELP" to learn how I work.</b>', { parse_mode: 'HTML', reply_markup: keyboard });
     } catch (error) {
         console.error('Error handling /start command:', error);
     }
