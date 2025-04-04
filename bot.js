@@ -104,7 +104,7 @@ async function checkConcertsForReminders() {
             if (concertDate.getTime() === tomorrow.getTime()) {
                 const concertSubscribers = await userService.getSubscribedUsers(concert.id);
                 for (const user of concertSubscribers) {
-                    await bot.sendMessage(user.userId, '🔔 Reminder! You have a concert tomorrow:');
+                    await bot.sendMessage(user.userId, '🔔 Reminder! You have a concert TOMORROW:');
                     await sendConcertNotification(user.userId, concert);
                 }
             }
@@ -189,9 +189,9 @@ bot.onText(/\/start/, async (msg) => {
             }
         };
 
-        await bot.sendMessage(userId, 'Hello! I am a concert tracking bot 🎶🤘 Press "❓ HELP" to learn how I work.', keyboard);
+        await bot.sendMessage(userId, 'Hello! I am a concert tracking bot 🎶🤘 <br/> Press "❓ HELP" to learn how I work.', { reply_markup: keyboard });
     } catch (error) {
-        console.error('Error handling /start command:', error);
+        console.error(`Error handling /start command for user ${userId}:`, error);
     }
 });
 
