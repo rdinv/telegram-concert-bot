@@ -26,7 +26,7 @@ async function initialize() {
 
 function setupScheduledTasks() {
     //  Check for concert reminders daily at 20:00
-    schedule.scheduleJob('0 20 * * *', async () => {
+    schedule.scheduleJob('0 18 * * *', async () => {
         try {
             await checkNewConcerts();
         } catch (error) {
@@ -35,7 +35,7 @@ function setupScheduledTasks() {
     });
 
     // Check for concert reminders daily at 10:00
-    schedule.scheduleJob('0 10 * * *', async () => {
+    schedule.scheduleJob('0 8 * * *', async () => {
         try {
             await checkConcertsForReminders();
         } catch (error) {
@@ -189,7 +189,7 @@ bot.onText(/\/start/, async (msg) => {
             }
         };
 
-        await bot.sendMessage(userId, 'Hello! I am a concert tracking bot 🎶🤘 </b> Press "❓ HELP" to learn how I work.</b>', { parse_mode: 'HTML', reply_markup: keyboard });
+        await bot.sendMessage(userId, 'Hello! I am a concert tracking bot 🎶🤘 Press "❓ HELP" to learn how I work.', keyboard);
     } catch (error) {
         console.error('Error handling /start command:', error);
     }
