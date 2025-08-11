@@ -1,5 +1,5 @@
-const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
+// Запуск Telegram-бота для Raspberry Pi OS
+require('./bot');
 const cheerio = require('cheerio');
 const cron = require('node-cron');
 require('dotenv').config(); // Load environment variables

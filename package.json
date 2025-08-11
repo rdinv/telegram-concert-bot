@@ -2,10 +2,10 @@
   "name": "telegram-concert-bot-api",
   "version": "1.0.0",
   "description": "Telegram bot for concert notifications",
-  "main": "bot.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node bot.js",
-    "dev": "nodemon bot.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "axios": "^1.6.7",
