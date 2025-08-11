@@ -1,7 +1,5 @@
-// Запуск Telegram-бота для Raspberry Pi OS
 require('./bot');
 const cheerio = require('cheerio');
-const cron = require('node-cron');
 require('dotenv').config(); // Load environment variables
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -149,5 +147,7 @@ cron.schedule('0 12 * * *', async () => {
         if (concert.date.includes(formattedTomorrow)) {
             bot.sendMessage(CHAT_ID, `⏳ Reminder! Concert tomorrow: ${concert.title}`);
         }
+    });
+});
     });
 });
